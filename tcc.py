@@ -74,7 +74,7 @@ def learning_curves_and_metrics(X_train, y_train, X_cv, y_cv, X_test, y_test, mo
 	# modelo depois de executar calc.learning_curves() ele já estará treinado sobre
 	# o conjunto X_train com os mesmos parâmetros que entrou.
 	errors = calc.learning_curves(X_train, y_train, X_cv, y_cv, model, step=step)
-	dv.save_learning_curves_f1(errors, etapa + ' ' + _get_model_params(model) + dataset)
+	dv.save_learning_curves_f1(errors, etapa + ' ' + dv.get_model_params(model) + dataset)
 	return _etapas_common(model, errors, X_test, y_test, dataset, etapa=etapa)
 	### REMOVER ESTA PARTE abaixo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	#model.fit(X_train, y_train)
@@ -118,7 +118,7 @@ def _etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset='TREC 3k', alg
 	regul, best_model = calc.regularization(X_train, y_train, X_cv, y_cv, inner_reg, algorithm)
 	dv.save_validation_curve(regul, 'E2 ' + algorithm + ' ' + load_dataset[1])
 	errors = calc.learning_curves(X_train, y_train, X_cv, y_cv, best_model, step=55)
-	dv.save_learning_curves_f1(errors, 'E2 ' + _get_model_params(best_model) + load_dataset[1])
+	dv.save_learning_curves_f1(errors, 'E2 ' + dv.get_model_params(best_model) + load_dataset[1])
 	_etapas_common(best_model, errors, X_test, y_test, load_dataset[1], etapa='E2')
 
 
@@ -199,7 +199,7 @@ def _etapa3_learning_curves(X_train, y_train, X_cv, y_cv, X_test, y_test, models
 	for model_k in models.keys():
 		best_model = models[model_k].set_params(**params[model_k])
 		errors = calc.learning_curves(X_train, y_train, X_cv, y_cv, best_model, step=step)
-		dv.save_learning_curves_f1(errors, 'E3 ' + _get_model_params(best_model) + dataset)
+		dv.save_learning_curves_f1(errors, 'E3 ' + dv.get_model_params(best_model) + dataset)
 		_etapas_common(best_model, errors, X_test, y_test, dataset, etapa='E3')
 
 
@@ -228,14 +228,17 @@ def wrong_predicted_emails_report(model):
 		X_train, X_cv, X_test, y_train, y_cv, y_test = pre.split_dataset(X, y, train_part=60, test_part=20, randsplit=False)
 		model.fit(X_train, y_train)
 		y_pred = model.predict(X)
-		f_name = 'Erro de classificacao ' + load_dataset[1] + _get_model_params(model) + '.txt'
+		f_name = 'Erro de classificacao ' + load_dataset[1] + dv.get_model_params(model) + '.txt'
+		_wrong_predicted_emails_report(f_name, X_text, y, y_pred)
 
-		with open(f_name, 'a') as f:
-			i = 0
-			while(i < len(y)):
-				if y[i] != y_pred[i]:
-					f.write('### ### ### (y: '+ str(y[i]) + ', y_pred: ' + str(y_pred[i]) +') ### ### ###\n\n' + X_text[i] + '\n\n')
-				i += 1		
+
+def _wrong_predicted_emails_report(f_name, X_text, y, y_pred):
+	with open(f_name, 'a') as f:
+		i = 0
+		while(i < len(y)):
+			if y[i] != y_pred[i]:
+				f.write('### ### ### (y: '+ str(y[i]) + ', y_pred: ' + str(y_pred[i]) +') ### ### ###\n\n' + X_text[i] + '\n\n')
+			i += 1
 
 
 def etapa4_truncated():
@@ -275,22 +278,22 @@ def etapa4_truncated():
 				f1 = calc.f1_score(model, X_test, y_test)
 				model_name = model_k if model_k == 'MultinomialNB' else 'SVM Linear'
 				dic_etapa4[model_name].append(str(round(f1, 3)))
-				print(_get_model_params(model) + '\nF1 test: %.4f\n' %f1)
+				print(dv.get_model_params(model) + '\nF1 test: %.4f\n' %f1)
 
 			# KNN K=1 e K=5 distance, em geral, foram os modelos de melhor desempenho dentre os KNNs
 			# KNN K=1
 			model = KNeighborsClassifier(n_neighbors=1, n_jobs=4)
 			model.fit(X_train, y_train)
 			f1 = calc.f1_score(model, X_test, y_test)
-			dic_etapa4[_get_model_params(model).strip()].append(str(round(f1, 3)))
-			print(_get_model_params(model) + '\nF1 test: %.4f\n' %f1)
+			dic_etapa4[dv.get_model_params(model).strip()].append(str(round(f1, 3)))
+			print(dv.get_model_params(model) + '\nF1 test: %.4f\n' %f1)
 
 			# KNN K=5 Distance
 			model = KNeighborsClassifier(n_neighbors=5, n_jobs=4, weights='distance')
 			model.fit(X_train, y_train)
 			f1 = calc.f1_score(model, X_test, y_test)
-			dic_etapa4[_get_model_params(model).strip()].append(str(round(f1, 3)))
-			print(_get_model_params(model) + '\nF1 test: %.4f\n' %f1)
+			dic_etapa4[dv.get_model_params(model).strip()].append(str(round(f1, 3)))
+			print(dv.get_model_params(model) + '\nF1 test: %.4f\n' %f1)
 
 		print('\nTempo total no dataset ' + load_dataset[1] + ' ' + _tempo_passado(ds_start_time))
 		df = DataFrame(dic_etapa4)
@@ -306,7 +309,7 @@ def etapa4():
 	dic_etapa4 = {'added_feature': [], 'model_params': [], 'f1_train': [], \
 				'f1_cv': [], 'prec_test': [], 'rec_test': [], 'f1_test': []}
 
-	for load_dataset in [load_datasets_functions[3], load_datasets_functions[0]]:
+	for load_dataset in [load_datasets_functions[0]]:
 		print('\nCarregando o dataset ' + load_dataset[1] + '...')
 		ds_start_time = time.time()
 		X_text, y = load_dataset[0](truncate=False)
@@ -336,7 +339,7 @@ def etapa4():
 				model = models1[model_k].set_params(**params[model_k])
 				f1_train, f1_cv, prec_test, rec_test, f1_test = learning_curves_and_metrics(X_train, y_train, \
 							X_cv, y_cv, X_test, y_test, model, step=step, dataset=load_dataset[1], etapa='E4 ' + preproc)
-				model_params = _get_model_params(model)
+				model_params = dv.get_model_params(model)
 				for k in dic_etapa4.keys():
 					value = eval(k)
 					str_or_num = value if type(value) == type('') else round(value, 5)
@@ -348,7 +351,7 @@ def etapa4():
 				model = KNeighborsClassifier(n_neighbors=k, n_jobs=4)
 				f1_train, f1_cv, prec_test, rec_test, f1_test = learning_curves_and_metrics(X_train, y_train, \
 							X_cv, y_cv, X_test, y_test, model, step=step, dataset=load_dataset[1], etapa='E4 ' + preproc)
-				model_params = _get_model_params(model)
+				model_params = dv.get_model_params(model)
 				for k in dic_etapa4.keys():
 					value = eval(k)
 					str_or_num = value if type(value) == type('') else round(value, 5)
@@ -358,7 +361,7 @@ def etapa4():
 				model = KNeighborsClassifier(n_neighbors=k, n_jobs=4, weights='distance')
 				f1_train, f1_cv, prec_test, rec_test, f1_test = learning_curves_and_metrics(X_train, y_train, \
 							X_cv, y_cv, X_test, y_test, model, step=step, dataset=load_dataset[1], etapa='E4 ' + preproc)
-				model_params = _get_model_params(model)
+				model_params = dv.get_model_params(model)
 				for k in dic_etapa4.keys():
 					value = eval(k)
 					str_or_num = value if type(value) == type('') else round(value, 5)
@@ -787,39 +790,154 @@ def _etapa4_truncated_GS():
 	return models1, params1, scoring
 
 
-def top_features_etapa4(): #### ALTERAR 123 PARA O VALOR DE C DO SVM LINEAR E 5 PARA O idx UTILIZADO NA ETAPA4 DE CADA DATASET!!!!
-	load_datasets_functions = [(dat.load_enron, 'Enron', 5, 123), \
-		(dat.load_spamAssassin, 'Spam Assassin', 5, 123), \
-		(dat.load_ling_spam, 'Ling Spam', 5, 123), \
-		(dat.load_TREC, 'TREC', 5, 123)]
+def realtorio_features_etapa4(): #### ALTERAR 123 PARA O VALOR DE C DO SVM LINEAR E 5 PARA O idx UTILIZADO NA ETAPA4 DE CADA DATASET!!!!
+	load_datasets_functions = [(dat.load_enron, 'Enron', 61, 3), \
+		(dat.load_spamAssassin, 'Spam Assassin', 6, 10), \
+		(dat.load_ling_spam, 'Ling Spam', 10, 3), \
+		(dat.load_TREC, 'TREC', 59, 3)]
+
+	top_n = 50
 
 	for load_dataset in load_datasets_functions:
+		dic_top_features = {'idx': [], 'feature_name': [], 'feature_weight': []}
+		dataset = load_dataset[1]
+		idx = load_dataset[2]
+		C = load_dataset[3]
+
+		print('\nCarregando dataset ' + dataset + '...')
+		start_time = time.time()
 		X_text, y = load_dataset[0](truncate=False)
-		X, added_feature = _etapa4_features(X_text, X=None, idx=load_dataset[2])
-		del X_text
+		print('Tempo de carregamento ' + _tempo_passado(start_time))
+
+		print('\nExtraindo features...\n')
+		start_time = time.time()
+		X, features_names = _top_features_etapa4(idx, X_text)
+		print('Features adicionadas em ' + _tempo_passado(start_time))
+
+		print('Treinando modelo...')
+		start_time = time.time()
 		X_train, X_cv, X_test, y_train, y_cv, y_test = pre.split_dataset(X, y, train_part=60, test_part=20, randsplit=False)
-		model = SVC(kernel='linear', C=load_dataset[3], gamma='score')
+		model = SVC(kernel='linear', C=C, gamma='scale')
 		model.fit(X_train, y_train)
+		print('\nModelo treinado em ' + _tempo_passado(start_time))
+
+		apagar_isso_aqui(model, dic_top_features, features_names, top_n, dataset)
+
+		'''
+		# Emails classificados de forma errada
+		y_pred = model.predict(X)
+		_wrong_predicted_emails_report('Erro de classificacao E4 ' + dataset + ' ' + dv.get_model_params(model) + '.txt', X_text, y, y_pred)
+
+		print('\nLista de features por relevância, dataset %s:' %dataset)
 		weight_idxs = np.argsort(model.coef_)[0] # argsort retorna os índices que ordenam model.coef_
-		for weight_idx in weight_idxs[::-1]: # [::-1] para a ordem decrescente dos pesos
-			print('Idx: %d, peso: %.3f' %(weight_idx, model.coef_[weight_idx]))
+		for weight_idx in weight_idxs[len(weight_idxs): len(weight_idxs)-1-top_n: -1]: # [::-1] para a ordem decrescente dos pesos
+			dic_top_features['idx'].append(weight_idx)
+			dic_top_features['feature_name'].append(features_names[weight_idx])
+			dic_top_features['feature_weight'].append(model.coef_[0][weight_idx])
+			print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(weight_idx, model.coef_[0][weight_idx], features_names[weight_idx]))
+
+		# Salvando resultados das top features
+		df = DataFrame(dic_top_features)
+		df.to_csv('top %d features E4 ' %top_n + dataset + '.csv', mode='a', index=False)
+
+		# Lista de features adicionadas ordenada segundo o peso de cada uma (apenas em Enron e TREC)
+		if dataset in ['Enron', 'TREC']:
+			dic_added_features = {'idx': [], 'feature_name': [], 'feature_weight': []}
+			original_max_features = 1899
+			added_features_idxs = np.argsort(model.coef_[0][original_max_features:])
+			print('\nLista de features adicionadas, dataset %s:' %dataset)
+			for relative_feature_idx in added_features_idxs:
+				feature_idx = original_max_features + relative_feature_idx
+				dic_added_features['idx'].append(feature_idx)
+				dic_added_features['feature_name'].append(features_names[feature_idx])
+				dic_added_features['feature_weight'].append(model.coef_[0][feature_idx])
+				print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(feature_idx, model.coef_[0][feature_idx], features_names[feature_idx]))
+			df = DataFrame(dic_added_features)
+			df.to_csv('Rank features adicionadas E4 ' + dataset + '.csv', mode='a', index=False)
+		'''
+
+def apagar_isso_aqui(model, dic_top_features, features_names, top_n, dataset):
+	print('\nLista de features por relevância, dataset %s:' %dataset)
+	weight_idxs = np.argsort(model.coef_)[0] # argsort retorna os índices que ordenam model.coef_
+	top_idxs = weight_idxs[len(weight_idxs): len(weight_idxs)-1-top_n: -1].tolist()
+	bottom_idxs = weight_idxs[:top_n].tolist()
+	for weight_idx in top_idxs + bottom_idxs:
+		dic_top_features['idx'].append(weight_idx)
+		dic_top_features['feature_name'].append(features_names[weight_idx])
+		dic_top_features['feature_weight'].append(model.coef_[0][weight_idx])
+		print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(weight_idx, model.coef_[0][weight_idx], features_names[weight_idx]))
+	# Salvando resultados das top features
+	df = DataFrame(dic_top_features)
+	df.to_csv('top %d features E4 ' %top_n + dataset + '.csv', mode='a', index=False)
 
 
-def _top_features_etapa4(idx, X_text, model):
-	vectorizer = None
-	if idx == 5:
-		vectorizer = pre.TfidfVectorizer(max_features=1899, min_df=5, strip_accents='unicode', \
-							stop_words=None, lowercase=True)
-	X_tfidf = vectorizer.fit_transform(X_text).toarray()
-	# TODO: implementar aqui o acesso à cada feature de acordo com o índice, concatenar 
-	features_list = vectorizer.get_feature_names()
-	features_list.append('$') # adicionar aqui os nomes de cada feature, em ordem!!
-	# talvez tenha q refazer _etapa4_features aqui para adicionar as keywords a uma lista, isso já automatizaria o processo
-	return features_list
+def _top_features_etapa4(idx, X_text):
+	# Features dos modelos SVM linear da etapa 4:
+	# Enron: idx 61 (TF-IDF + todas as features normalizadas + WSD max 3 sentidos)
+	# Spam Assassin: idx 6 (TF-IDF min_df=5 max_features=3000)
+	# Ling Spam: idx 10 (TF-IDF min_df=5 no_accents stop_words preproc stem)
+	# TREC: idx 59 (TF-IDF + todas as features normalizadas + WSD max 1 sentido)
+	X, features_names = None, None
+	original_max_features = 1899
+	fe = FeatureExpander()
+	min_df = 5
+
+	if idx == 6:
+		max_features = 3000
+		vectorizer = pre.TfidfVectorizer(max_features=max_features, min_df=min_df, \
+										strip_accents=None, stop_words=None, lowercase=True)
+		X = vectorizer.fit_transform(X_text).toarray()
+		features_names = vectorizer.get_feature_names()
+
+	elif idx == 10:
+		X_ps_text = pre.op.preprocess(X_text, stemming=True)
+		vectorizer = pre.TfidfVectorizer(max_features=original_max_features, min_df=min_df, \
+								strip_accents='unicode', stop_words='english', lowercase=True)
+		X = vectorizer.fit_transform(X_ps_text).toarray()
+		features_names = vectorizer.get_feature_names()
+
+	elif idx == 59 or idx == 61:
+		# upper_case norm f_max_val=100
+		feature_max_val = 100
+		dic_case = fe.largest_uppercase_seq(X_text)
+		dic_case = fe.dic_normalize(dic_case, feature_max_val=feature_max_val)
+		X_all_features = fe.create_npmatrix_from_dic_features(dic_case)
+		features_names = list(dic_case.keys()) # (será features_names[1899] a [1899 + 2])
+		# seek_URL 1-hot
+		urls = fe.seek_URL(X_text)
+		urls = fe.feature_to_one_hot(urls)
+		X_all_features = fe.add_feature_to_npmatrix(X_all_features, urls)
+		features_names.append('urls_1_hot') # (será features_names[1899 + 3])
+		# punctuations 1-hot
+		dic_punct = fe.count_punctuations(X_text)
+		dic_punct = fe.dic_features_to_one_hot(dic_punct)
+		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_punct)
+		features_names += list(dic_punct.keys()) # (será features_names[1899 + 4] a [1899 + 7])
+		# seek_tag seek_tag 1-hot
+		dic_tags = fe.seek_tag(X_text)
+		dic_tags = fe.dic_features_to_one_hot(dic_tags)
+		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_tags)
+		features_names += list(dic_tags.keys()) # (será features_names[1899 + 8] a [1899 + 16])
+		# pos_tag norm f_max_val=50
+		feature_max_val = 50
+		dic_pos_tags = fe.pos_tags(X_text)
+		dic_pos_tags = fe.dic_normalize(dic_pos_tags, feature_max_val=feature_max_val)
+		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_pos_tags)
+		features_names += list(dic_pos_tags.keys()) # (será features_names[1899 + 17] a [1899 + 19])
+		# WSD max_senses = 1 ou 3
+		max_senses = 1 if idx == 59 else 3
+		X_wsd = fe.wsd(X_text, max_senses=max_senses)
+		vectorizer = pre.TfidfVectorizer(max_features=original_max_features, min_df=min_df, \
+										strip_accents='unicode', stop_words=None, lowercase=True)
+		X_wsd_tfidf = vectorizer.fit_transform(X_wsd).toarray()
+		X = fe.add_feature_to_npmatrix(X_wsd_tfidf, X_all_features)
+		features_names = vectorizer.get_feature_names() + features_names # (será features_names[0] a [1898])
+
+	return (X, features_names)
 
 
 def _etapas_common(model, errors, X_test, y_test, dataset='TREC 3k', etapa='E1'):
-	algorithm = _get_model_params(model)
+	algorithm = dv.get_model_params(model)
 	prec_test, rec_test, f1_test = calc.all_metrics(model, X_test, y_test)
 	f1_train = (1-errors['train'][len(errors['train']) - 1])
 	f1_cv = (1-errors['cv'][len(errors['cv']) - 1])
@@ -834,32 +952,6 @@ def	_print_all_metrics(prec_test, rec_test, f1_test):
 	print('Precisão teste:     %.5f' %prec_test)
 	print('Recall teste:       %.5f' %rec_test)
 	print('F1-score teste:     %.5f' %f1_test + '\n')
-
-
-def _get_model_params(model):
-	algorithm = str(model).split('(')[0]
-	alg_dic = {'SVC': 'SVM C=%.5g ', \
-			'KNeighborsClassifier': 'KNN K=%d ', \
-			'GaussianNB': 'Naive Bayes var_smoothing=%.3e ', \
-			'MultinomialNB': 'Multinomial NB alpha=%.3e '}
-
-	if algorithm == 'SVC':
-		algorithm = alg_dic[algorithm] %model.C
-		if model.kernel == 'poly':
-			algorithm += 'poly ' + str(model.degree) + ' '
-		elif model.kernel == 'sigmoid':
-			algorithm += 'sigmoid '
-
-	elif algorithm == 'KNeighborsClassifier':
-		algorithm = alg_dic[algorithm] %model.n_neighbors + ('Distance ' if model.weights == 'distance' else '')
-
-	elif algorithm == 'GaussianNB':
-		algorithm = alg_dic[algorithm] %model.var_smoothing
-
-	elif algorithm == 'MultinomialNB':
-		algorithm = alg_dic[algorithm] %model.alpha
-
-	return algorithm
 
 
 def _get_model_name(model):
