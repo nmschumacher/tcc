@@ -98,9 +98,16 @@ def load_spamAssassin(truncate=True, load_header=False):
 	# pasta /20021010_easy_ham e 500 spams da pasta /20030228_spam, totalizando
 	# 3051 emails, 84%/16% de ham/spam. Cada pasta dessas contém emails no formato txt com header e body.
 	# Para todo email com header, após o primeiro '\n\n' começa o corpo do email, antes disso está o conteúdo do header.
-	email_folders = ['20021010_easy_ham/easy_ham/', '20030228_spam/spam/', '20030228_easy_ham_2/easy_ham_2/', \
-					'20021010_spam/spam/', '20021010_hard_ham/hard_ham/', '20030228_easy_ham/easy_ham/', \
-					'20030228_spam_2/spam_2/', '20030228_hard_ham/hard_ham/', '20050311_spam_2/spam_2/']
+	email_folders = ['20030228_easy_ham/easy_ham/', '20030228_spam/spam/', '20030228_easy_ham_2/easy_ham_2/', \
+					'20030228_hard_ham/hard_ham/', '20050311_spam_2/spam_2/']
+
+	'''
+		A primeira lista de emails utilizada antes de corrigir removendo as pastas repetidas foi esta:
+		['20021010_easy_ham/easy_ham/', '20030228_spam/spam/', '20030228_easy_ham_2/easy_ham_2/', \
+		'20021010_spam/spam/', '20021010_hard_ham/hard_ham/', '20030228_easy_ham/easy_ham/', \
+		'20030228_spam_2/spam_2/', '20030228_hard_ham/hard_ham/', '20050311_spam_2/spam_2/']
+	'''
+
 	if truncate:
 		return _load_spamAssassin(email_folders[:2], load_header)
 	return _load_spamAssassin(email_folders, load_header)
@@ -125,7 +132,7 @@ def _load_spamAssassin(email_folders, load_header=False):
 	return (X_text, y)
 
 
-def load_ling_spam(load_subject=False):
+def load_ling_spam(truncate=True, load_header=False):
 	# Estrutura do Ling Spam dataset:
 	# São 4 datasets, sendo o 'bare' sem aplicação de lematização nem remoção de stop words.
 	# Este é o dataset utilizado neste experimento, com 2893 mensagens, sendo 2412 ham e 481 spam,
@@ -134,13 +141,14 @@ def load_ling_spam(load_subject=False):
 	# seguido de '\n\n' e o corpo do email na sequência.
 	bare_path = '/home/nicolas/Área de Trabalho/TCC implementacao/datasets/Ling Spam/lingspam_public/bare/'
 	X_text, y = [], []
+	del truncate # Parâmetro utilizado apenas por convenção
 	# Acessamos a pasta bare, buscando cada um dos 10 subdiretórios
 	for bare_part in listdir(bare_path):
 		# Percorremos todos os emails da pasta
 		for fname in listdir(bare_path + bare_part):
 			with open(bare_path + bare_part + '/' + fname, 'r', encoding='ISO-8859-1') as f:
 				data = f.read()
-				if not load_subject and data.startswith('Subject:'):
+				if not load_header and data.startswith('Subject:'):
 					data = data[data.index('\n\n')+2 :]
 				X_text.append(data)
 				y.append(1 if fname.startswith('spmsg') else 0)
