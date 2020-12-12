@@ -65,8 +65,6 @@ def etapa1():
 			model = KNeighborsClassifier(n_neighbors=k, n_jobs=4, weights='distance')
 			learning_curves_and_metrics(X_train, y_train, X_cv, y_cv, X_test, y_test, model, dataset=load_dataset[1])
 
-		# Neural Network section
-
 
 def learning_curves_and_metrics(X_train, y_train, X_cv, y_cv, X_test, y_test, model, step=55, dataset='TREC 3k', etapa='E1'):
 	# Obs.: calc.learning_curves() realiza fit() no modelo e, assim, ele é alterado
@@ -76,17 +74,12 @@ def learning_curves_and_metrics(X_train, y_train, X_cv, y_cv, X_test, y_test, mo
 	errors = calc.learning_curves(X_train, y_train, X_cv, y_cv, model, step=step)
 	dv.save_learning_curves_f1(errors, etapa + ' ' + dv.get_model_params(model) + dataset)
 	return _etapas_common(model, errors, X_test, y_test, dataset, etapa=etapa)
-	### REMOVER ESTA PARTE abaixo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	#model.fit(X_train, y_train)
-	#f1_train = calc.f1_score(model, X_train, y_train)
-	#f1_cv = calc.f1_score(model, X_cv, y_cv)
-	#prec_test, rec_test, f1_test = calc.all_metrics(model, X_test, y_test)
-	#return f1_train, f1_cv, prec_test, rec_test, f1_test
 
 
-
-# Plot do gráfico do parâmetro de regularização C (curva de validação)
-########### PARA ENTENDER MELHOR A CURVA DE VALIDAÇÃO, OLHAR SEMANA 6 DO COURSERA
+'''
+	Regularização dos SVMs e bayesianos. Inclui plot da curva de validação, isto é, a 
+	evolução do parâmetro de regularização.
+'''
 def etapa2():
 	load_datasets_functions = [(dat.load_enron, 'Enron 3k'), \
 			(dat.load_spamAssassin, 'Spam Assassin 3k'), \
@@ -99,27 +92,27 @@ def etapa2():
 		X = pre.octave_preprocess(X_text)
 		X_train, X_cv, X_test, y_train, y_cv, y_test = pre.split_dataset(X, y, train_part=60, test_part=20, randsplit=False)
 		# SVM linear, sigmoid e poly
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM sigmoid')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM poly 2')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM poly 3')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM poly 4')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM poly 5')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='SVM poly 7')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM sigmoid')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM poly 2')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM poly 3')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM poly 4')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM poly 5')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='SVM poly 7')
 		# Naive Bayes Gaussian e Multinomial
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='Naive Bayes')
-		_etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset=dataset, algorithm='Multinomial')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='Naive Bayes')
+		_etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset=dataset, algorithm='Multinomial')
 
 
 '''
 	algorithm, valores aceitos: 'SVM', 'SVM sigmoid', 'SVM poly [0-9]+' e 'Naive Bayes'
 '''
-def _etapa2(X_train, y_train, X_cv, y_cv, inner_reg=True, dataset='TREC 3k', algorithm='SVM'):
+def _etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset='TREC 3k', algorithm='SVM'):
 	regul, best_model = calc.regularization(X_train, y_train, X_cv, y_cv, inner_reg, algorithm)
-	dv.save_validation_curve(regul, 'E2 ' + algorithm + ' ' + load_dataset[1])
+	dv.save_validation_curve(regul, 'E2 ' + algorithm + ' ' + dataset)
 	errors = calc.learning_curves(X_train, y_train, X_cv, y_cv, best_model, step=55)
-	dv.save_learning_curves_f1(errors, 'E2 ' + dv.get_model_params(best_model) + load_dataset[1])
-	_etapas_common(best_model, errors, X_test, y_test, load_dataset[1], etapa='E2')
+	dv.save_learning_curves_f1(errors, 'E2 ' + dv.get_model_params(best_model) + dataset)
+	_etapas_common(best_model, errors, X_test, y_test, dataset, etapa='E2')
 
 
 '''
@@ -206,10 +199,10 @@ def _etapa3_learning_curves(X_train, y_train, X_cv, y_cv, X_test, y_test, models
 '''
 	A partir de alguns modelos treinados na etapa 2, este método armazena em txt emails que foram
 	incorretamente classificados a fim de realizar a etapa manual da metodologia: analizar padrões
-	em tais email e procurar modelar novas features para a etapa 4 do experimento.
+	em tais emails e procurar modelar novas features para a etapa 4 do experimento.
 '''
 def pre_etapa4():
-	Cs = [0.021, 0.07, 0.15, 0.024]
+	Cs = [0.021, 0.18, 0.15, 0.024]
 	for c in Cs:
 		model = SVC(kernel='linear', C=c, gamma='scale')
 		wrong_predicted_emails_report(model)
@@ -221,7 +214,7 @@ def wrong_predicted_emails_report(model):
 		(dat.load_ling_spam, 'Ling Spam'), \
 		(dat.load_TREC, 'TREC 3k')]
 
-	for n, load_dataset in enumerate(load_datasets_functions):
+	for load_dataset in load_datasets_functions:
 		print('Preparando relatório para o dataset ' + load_dataset[1] + '...')
 		X_text, y = load_dataset[0]()
 		X = pre.octave_preprocess(X_text)
@@ -241,6 +234,10 @@ def _wrong_predicted_emails_report(f_name, X_text, y, y_pred):
 			i += 1
 
 
+'''
+	Passo entre as etapas 3 e 4, onde são geradas as maiores tabelas, contendo resultados
+	da aplicação de cada nova feature.
+'''
 def etapa4_truncated():
 	load_datasets_functions = [(dat.load_enron, 'Enron 3k'), \
 		(dat.load_spamAssassin, 'Spam Assassin 3k'), \
@@ -297,9 +294,13 @@ def etapa4_truncated():
 
 		print('\nTempo total no dataset ' + load_dataset[1] + ' ' + _tempo_passado(ds_start_time))
 		df = DataFrame(dic_etapa4)
-		df.to_csv('resultados E4 ' + load_dataset[1] + ' truncado.csv', index=False)
+		df.to_csv('resultados E4 WSD ONLY' + load_dataset[1] + ' truncado.csv', index=False)
 
 
+'''
+	Treinamento com todos os datasets expandidos com 2 configurações diferentes de features
+	em cada um.
+'''
 def etapa4():
 	load_datasets_functions = [(dat.load_enron, 'Enron', 240), \
 		(dat.load_spamAssassin, 'Spam Assassin', 120), \
@@ -309,7 +310,7 @@ def etapa4():
 	dic_etapa4 = {'added_feature': [], 'model_params': [], 'f1_train': [], \
 				'f1_cv': [], 'prec_test': [], 'rec_test': [], 'f1_test': []}
 
-	for load_dataset in [load_datasets_functions[0]]:
+	for load_dataset in load_datasets_functions:
 		print('\nCarregando o dataset ' + load_dataset[1] + '...')
 		ds_start_time = time.time()
 		X_text, y = load_dataset[0](truncate=False)
@@ -317,12 +318,13 @@ def etapa4():
 		is_first = [True, False] # Para alternar entre os 2 tipos de pré-processamento de cada dataset
 		step = load_dataset[2]
 
-		for first in [False]:#is_first: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ALTERAR
+		for first in is_first:
 			preproc = 'pre1' if first else 'pre2'
 			print('\nExtraindo features...')
 			start_time = time.time()
 			X, added_feature = _etapa4(X_text, is_first=first, dataset=load_dataset[1])
-			del X_text ####<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REMOVER!!!!!!
+			if not first:
+				del X_text
 			print('Feature ' + added_feature + ' adicionada, ' + _tempo_passado(start_time))
 			print('\nEscolhendo parâmetros...\n')
 			start_time = time.time()
@@ -398,7 +400,8 @@ def _etapa4(X_text, is_first, dataset):
 		if is_first:
 			return _etapa4_features(X_text, X=None, idx=6)  # idx 6: 'TF-IDF min_df=5 max_features=3000'
 		else:
-			return _etapa4_features(X_text, X=None, idx=60) # idx 60: TF-IDF + todas as features normalizadas + WSD max 2 sentido
+			#return _etapa4_features(X_text, X=None, idx=60) # idx 60: TF-IDF + todas as features normalizadas + WSD max 2 sentido
+			return _etapa4_features(X_text, X=None, idx=55) # idx 55: TF-IDF min_df=5 no_accents + upper_case norm f_max_val=100 + seek_URL 1-hot + punctuations 1-hot + seek_tag 1-hot + pos_tag norm f_max_val=50
 
 	elif dataset == 'Ling Spam':
 		if is_first:
@@ -418,18 +421,20 @@ def _etapa4(X_text, is_first, dataset):
 	X: X_text pré-processado no formato 1-hot encoding
 	idx:
 		[0]     Sem adição de novas features
-		[1~5]   WSD com max_senses de valores [1, 2, 3, 5, 7]
-		[6~10]  adiciona pos_tags sem e com normalização e utilizando a procentagem de cada tag
-				com relação ao total de palavras do texto
-		[11~16] adiciona largest_uppercase_seq padrão, na forma 1-hot, com normalização e com a
-				porcentagem de palavras em maiúsculo com relação ao total de palavras do texto
-		[17~21] adiciona count_punctuations padrão, na forma 1-hot, com normalização e 
-				limitando o valor das features na normalização
-		[22~27] conta tags html, utiliza a contagem padrão, na forma 1-hot, com normalização e 
-				utilizando a porcentagem de cada tag com relação ao total de tags do email
+		[1~10]  Aplicação de TF-IDF variando seus parâmetros
+		[11~15] WSD com max_senses de valores [1, 2, 3, 5, 7]
+		[16~20] Adição de pos_tags variando a normalização
+		[21~26] Adiciona a contagem de palavras em letra maiúscula
+		[27~31] Adiciona a contagem dos símbolos ?, $, % e !
+		[32~37] Contagem de tags html
+		[38~43] Contagem de URLs
+		[44~50] Adiciona uma feature de cada vez, inclusive WSD. Este grupo 
+				de configurações, em sua maioria, não é normalizado.
+		[51~61] Adiciona uma feature de cada vez, inclusive WSD. Este grupo 
+				de configurações é normalizado.
 '''
 def _etapa4_features(X_text, X, idx):
-	features_list = ['None'] + 10*['TF-IDF'] + 5*['WSD max_senses=%d'] + \
+	features_list = ['One-hot vocab'] + 10*['TF-IDF'] + 5*['WSD max_senses=%d'] + \
 		5*['pos_tag'] + 6*['upper_case'] + 5*['punctuations'] + \
 		6*['seek_tag'] + 6*['seek_URL'] + 7*['upper_case + seek_URL'] + \
 		11*['upper_case']
@@ -504,10 +509,11 @@ def _etapa4_features(X_text, X, idx):
 	last_idx += 10
 
 	# [11~15]: wsd()
-	if idx <= 5:
+	if idx <= last_idx + 5:
 		max_senses_list = [1, 2, 3, 5, 7]
-		added_feature = added_feature %max_senses_list[idx-1]
-		X_wsd = fe.wsd(X_text, max_senses=max_senses_list[idx-1])
+		max_senses = max_senses_list[idx-last_idx-1]
+		added_feature = added_feature %max_senses
+		X_wsd = fe.wsd(X_text, max_senses=max_senses)
 		return (pre.octave_preprocess(X_wsd), added_feature)
 	last_idx += 5
 
@@ -790,150 +796,30 @@ def _etapa4_truncated_GS():
 	return models1, params1, scoring
 
 
-def realtorio_features_etapa4(): #### ALTERAR 123 PARA O VALOR DE C DO SVM LINEAR E 5 PARA O idx UTILIZADO NA ETAPA4 DE CADA DATASET!!!!
-	load_datasets_functions = [(dat.load_enron, 'Enron', 61, 3), \
-		(dat.load_spamAssassin, 'Spam Assassin', 6, 10), \
-		(dat.load_ling_spam, 'Ling Spam', 10, 3), \
-		(dat.load_TREC, 'TREC', 59, 3)]
-
-	top_n = 50
-
-	for load_dataset in load_datasets_functions:
-		dic_top_features = {'idx': [], 'feature_name': [], 'feature_weight': []}
-		dataset = load_dataset[1]
-		idx = load_dataset[2]
-		C = load_dataset[3]
-
-		print('\nCarregando dataset ' + dataset + '...')
-		start_time = time.time()
-		X_text, y = load_dataset[0](truncate=False)
-		print('Tempo de carregamento ' + _tempo_passado(start_time))
-
-		print('\nExtraindo features...\n')
-		start_time = time.time()
-		X, features_names = _top_features_etapa4(idx, X_text)
-		print('Features adicionadas em ' + _tempo_passado(start_time))
-
-		print('Treinando modelo...')
-		start_time = time.time()
-		X_train, X_cv, X_test, y_train, y_cv, y_test = pre.split_dataset(X, y, train_part=60, test_part=20, randsplit=False)
-		model = SVC(kernel='linear', C=C, gamma='scale')
-		model.fit(X_train, y_train)
-		print('\nModelo treinado em ' + _tempo_passado(start_time))
-
-		apagar_isso_aqui(model, dic_top_features, features_names, top_n, dataset)
-
-		'''
-		# Emails classificados de forma errada
-		y_pred = model.predict(X)
-		_wrong_predicted_emails_report('Erro de classificacao E4 ' + dataset + ' ' + dv.get_model_params(model) + '.txt', X_text, y, y_pred)
-
-		print('\nLista de features por relevância, dataset %s:' %dataset)
-		weight_idxs = np.argsort(model.coef_)[0] # argsort retorna os índices que ordenam model.coef_
-		for weight_idx in weight_idxs[len(weight_idxs): len(weight_idxs)-1-top_n: -1]: # [::-1] para a ordem decrescente dos pesos
-			dic_top_features['idx'].append(weight_idx)
-			dic_top_features['feature_name'].append(features_names[weight_idx])
-			dic_top_features['feature_weight'].append(model.coef_[0][weight_idx])
-			print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(weight_idx, model.coef_[0][weight_idx], features_names[weight_idx]))
-
-		# Salvando resultados das top features
-		df = DataFrame(dic_top_features)
-		df.to_csv('top %d features E4 ' %top_n + dataset + '.csv', mode='a', index=False)
-
-		# Lista de features adicionadas ordenada segundo o peso de cada uma (apenas em Enron e TREC)
-		if dataset in ['Enron', 'TREC']:
-			dic_added_features = {'idx': [], 'feature_name': [], 'feature_weight': []}
-			original_max_features = 1899
-			added_features_idxs = np.argsort(model.coef_[0][original_max_features:])
-			print('\nLista de features adicionadas, dataset %s:' %dataset)
-			for relative_feature_idx in added_features_idxs:
-				feature_idx = original_max_features + relative_feature_idx
-				dic_added_features['idx'].append(feature_idx)
-				dic_added_features['feature_name'].append(features_names[feature_idx])
-				dic_added_features['feature_weight'].append(model.coef_[0][feature_idx])
-				print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(feature_idx, model.coef_[0][feature_idx], features_names[feature_idx]))
-			df = DataFrame(dic_added_features)
-			df.to_csv('Rank features adicionadas E4 ' + dataset + '.csv', mode='a', index=False)
-		'''
-
-def apagar_isso_aqui(model, dic_top_features, features_names, top_n, dataset):
-	print('\nLista de features por relevância, dataset %s:' %dataset)
-	weight_idxs = np.argsort(model.coef_)[0] # argsort retorna os índices que ordenam model.coef_
-	top_idxs = weight_idxs[len(weight_idxs): len(weight_idxs)-1-top_n: -1].tolist()
-	bottom_idxs = weight_idxs[:top_n].tolist()
-	for weight_idx in top_idxs + bottom_idxs:
-		dic_top_features['idx'].append(weight_idx)
-		dic_top_features['feature_name'].append(features_names[weight_idx])
-		dic_top_features['feature_weight'].append(model.coef_[0][weight_idx])
-		print('Idx: %4d\tpeso: %.3f\tfeature: %s' %(weight_idx, model.coef_[0][weight_idx], features_names[weight_idx]))
-	# Salvando resultados das top features
-	df = DataFrame(dic_top_features)
-	df.to_csv('top %d features E4 ' %top_n + dataset + '.csv', mode='a', index=False)
-
-
-def _top_features_etapa4(idx, X_text):
-	# Features dos modelos SVM linear da etapa 4:
-	# Enron: idx 61 (TF-IDF + todas as features normalizadas + WSD max 3 sentidos)
-	# Spam Assassin: idx 6 (TF-IDF min_df=5 max_features=3000)
-	# Ling Spam: idx 10 (TF-IDF min_df=5 no_accents stop_words preproc stem)
-	# TREC: idx 59 (TF-IDF + todas as features normalizadas + WSD max 1 sentido)
-	X, features_names = None, None
-	original_max_features = 1899
-	fe = FeatureExpander()
-	min_df = 5
-
-	if idx == 6:
-		max_features = 3000
-		vectorizer = pre.TfidfVectorizer(max_features=max_features, min_df=min_df, \
-										strip_accents=None, stop_words=None, lowercase=True)
-		X = vectorizer.fit_transform(X_text).toarray()
-		features_names = vectorizer.get_feature_names()
-
-	elif idx == 10:
-		X_ps_text = pre.op.preprocess(X_text, stemming=True)
-		vectorizer = pre.TfidfVectorizer(max_features=original_max_features, min_df=min_df, \
-								strip_accents='unicode', stop_words='english', lowercase=True)
-		X = vectorizer.fit_transform(X_ps_text).toarray()
-		features_names = vectorizer.get_feature_names()
-
-	elif idx == 59 or idx == 61:
-		# upper_case norm f_max_val=100
-		feature_max_val = 100
-		dic_case = fe.largest_uppercase_seq(X_text)
-		dic_case = fe.dic_normalize(dic_case, feature_max_val=feature_max_val)
-		X_all_features = fe.create_npmatrix_from_dic_features(dic_case)
-		features_names = list(dic_case.keys()) # (será features_names[1899] a [1899 + 2])
-		# seek_URL 1-hot
-		urls = fe.seek_URL(X_text)
-		urls = fe.feature_to_one_hot(urls)
-		X_all_features = fe.add_feature_to_npmatrix(X_all_features, urls)
-		features_names.append('urls_1_hot') # (será features_names[1899 + 3])
-		# punctuations 1-hot
-		dic_punct = fe.count_punctuations(X_text)
-		dic_punct = fe.dic_features_to_one_hot(dic_punct)
-		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_punct)
-		features_names += list(dic_punct.keys()) # (será features_names[1899 + 4] a [1899 + 7])
-		# seek_tag seek_tag 1-hot
-		dic_tags = fe.seek_tag(X_text)
-		dic_tags = fe.dic_features_to_one_hot(dic_tags)
-		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_tags)
-		features_names += list(dic_tags.keys()) # (será features_names[1899 + 8] a [1899 + 16])
-		# pos_tag norm f_max_val=50
-		feature_max_val = 50
-		dic_pos_tags = fe.pos_tags(X_text)
-		dic_pos_tags = fe.dic_normalize(dic_pos_tags, feature_max_val=feature_max_val)
-		X_all_features = fe.add_dic_features_to_npmatrix(X_all_features, dic_pos_tags)
-		features_names += list(dic_pos_tags.keys()) # (será features_names[1899 + 17] a [1899 + 19])
-		# WSD max_senses = 1 ou 3
-		max_senses = 1 if idx == 59 else 3
-		X_wsd = fe.wsd(X_text, max_senses=max_senses)
-		vectorizer = pre.TfidfVectorizer(max_features=original_max_features, min_df=min_df, \
-										strip_accents='unicode', stop_words=None, lowercase=True)
-		X_wsd_tfidf = vectorizer.fit_transform(X_wsd).toarray()
-		X = fe.add_feature_to_npmatrix(X_wsd_tfidf, X_all_features)
-		features_names = vectorizer.get_feature_names() + features_names # (será features_names[0] a [1898])
-
-	return (X, features_names)
+'''
+	O artigo Machine Learning Methods For Spam E-Mail Classification, de W.A. Awad e S.M. ELseuofi, alcançou
+	uma medida F1 de 0.991 com o modelo Naive Bayes treinado sobre o SpamAssassin.
+	Aqui é feita uma variação de features usando TF-IDF para verificar se é possível chegar a um valor
+	próximo utilizando esta técnica.
+'''
+def etapa4_comparacao_com_artigo():
+	load_dataset = (dat.load_spamAssassin, 'Spam Assassin')
+	X_text, y = load_dataset[0](truncate=False)
+	max_features_list = [50, 70, 100, 200, 500, 1000, 2000, 3000, 5000, None]
+	stop_words_selection = [None, 'english']
+	for max_features in max_features_list:
+		for stop_words in stop_words_selection:
+			vectorizer = pre.TfidfVectorizer(max_features=max_features, min_df=5, strip_accents=None, \
+										stop_words=stop_words, lowercase=True)
+			X = vectorizer.fit_transform(X_text).toarray()
+			X_train, X_cv, X_test, y_train, y_cv, y_test = pre.split_dataset(X, y, train_part=60, test_part=20, randsplit=False)
+			unused, best_model_g = calc.regularization(X_train, y_train, X_cv, y_cv, False, 'Naive Bayes')
+			unused, best_model_m = calc.regularization(X_train, y_train, X_cv, y_cv, False, 'Multinomial')
+			f1_g = calc.f1_score(best_model_g, X_test, y_test)
+			f1_m = calc.f1_score(best_model_m, X_test, y_test)
+			print('\n\nNum features: %5d, stop_words: %s' %(X.shape[1], stop_words=='english'))
+			print(dv.get_model_params(best_model_g) + ', F1: %.4f' %f1_g)
+			print(dv.get_model_params(best_model_m) + ', F1: %.4f\n' %f1_m)
 
 
 def _etapas_common(model, errors, X_test, y_test, dataset='TREC 3k', etapa='E1'):
@@ -952,22 +838,6 @@ def	_print_all_metrics(prec_test, rec_test, f1_test):
 	print('Precisão teste:     %.5f' %prec_test)
 	print('Recall teste:       %.5f' %rec_test)
 	print('F1-score teste:     %.5f' %f1_test + '\n')
-
-
-def _get_model_name(model):
-	algorithm = str(model).split('(')[0]
-	if algorithm == 'SVC':
-		algorithm = 'SVM'
-		if model.kernel == 'poly':
-			algorithm += ' poly ' + str(model.degree)
-		elif model.kernel == 'sigmoid':
-			algorithm += ' sigmoid'
-
-	elif algorithm == 'KNeighborsClassifier':
-		algorithm = 'KNN K=%d' %model.n_neighbors + (' Distance ' if model.weights == 'distance' else '')
-	# GaussianNB e MultinomialNB não precisam ser editados
-
-	return algorithm
 
 
 def _tempo_passado(start_time):
