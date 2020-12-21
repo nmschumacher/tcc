@@ -1,7 +1,9 @@
 '''
-Para estudar:
-https://blog.barracuda.com/2013/10/03/ham-v-spam-whats-the-difference/
-https://www.sciencedirect.com/science/article/abs/pii/S1566253518303968
+	Trabalho de Conclusão de Curso de Ciência da Computação
+	pela Universidade de Brasília.
+
+	Nícolas M. Schumacher
+	Prof. Dr. orientador Thiago P. Faleiros
 '''
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -19,9 +21,13 @@ import util.data_visualisation as dv
 import util.estimator_selection as es
 
 
-# Primeiros resultados, modelos simples, parâmetros default, a parte mais 
-# trabalhada é a do pré-processamento de texto, sendo utilizada a mesma
-# técnica do exercício em Octave
+'''
+	Primeiros resultados, modelos simples, parâmetros default, a parte mais 
+	trabalhada é a do pré-processamento de texto, sendo utilizada a mesma
+	técnica aplicada em um vocabulário disponibilizado no curso de Machine 
+	Learning na plataforma Coursera,
+	https://www.coursera.org/learn/machine-learning
+'''
 def etapa1():
 	load_datasets_functions = [(dat.load_enron, 'Enron 3k'), \
 			(dat.load_spamAssassin, 'Spam Assassin 3k'), \
@@ -105,7 +111,7 @@ def etapa2():
 
 
 '''
-	algorithm, valores aceitos: 'SVM', 'SVM sigmoid', 'SVM poly [0-9]+' e 'Naive Bayes'
+	algorithm, valores aceitos: 'SVM', 'SVM sigmoid', 'SVM poly [0-9]+', 'Naive Bayes' (gaussiano) e 'Multinomial'
 '''
 def _etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, dataset='TREC 3k', algorithm='SVM'):
 	regul, best_model = calc.regularization(X_train, y_train, X_cv, y_cv, inner_reg, algorithm)
@@ -116,7 +122,8 @@ def _etapa2(X_train, y_train, X_cv, y_cv, X_test, y_test, inner_reg=True, datase
 
 
 '''
-	Similar à etapa 2, porém utilizando o conjunto total de dados dos datasets que foram truncados.
+	Similar à etapa 2, porém utilizando o conjunto total de dados dos datasets que foram truncados, isto é,
+	Enron, SpamAssassin e TREC-05.
 '''
 def etapa3():
 	load_datasets_functions = [(dat.load_enron, 'Enron'), \
@@ -418,7 +425,7 @@ def _etapa4(X_text, is_first, dataset):
 
 '''
 	X_text: lista de strings, que são os emails
-	X: X_text pré-processado no formato 1-hot encoding
+	X: X_text pré-processado no formato one-hot encoding
 	idx:
 		[0]     Sem adição de novas features
 		[1~10]  Aplicação de TF-IDF variando seus parâmetros
